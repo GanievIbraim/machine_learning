@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогноз ценности жизненного цикла клиента</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Прогноз ценности жизненного цикла клиента (CLV)</h1>
+        <form id="predictionForm">
+            <label for="frequency">Частота покупок:</label>
+            <input type="number" id="frequency" name="frequency" required>
+
+            <label for="recency">Время с последней покупки:</label>
+            <input type="number" id="recency" name="recency" required>
+
+            <label for="averageSpend">Средняя сумма покупки:</label>
+            <input type="number" id="averageSpend" name="averageSpend" step="0.01" required>
+
+            <button type="button" onclick="predictCLV()">Прогнозировать CLV</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function predictCLV() {
+            const frequency = document.getElementById('frequency').value;
+            const recency = document.getElementById('recency').value;
+            const averageSpend = document.getElementById('averageSpend').value;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Frequency: parseFloat(frequency),
+                        Recency: parseFloat(recency),
+                        AverageSpend: parseFloat(averageSpend)
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    document.getElementById('result').innerText = `Ошибка: ${data.error}`;
+                } else {
+                    document.getElementById('result').innerText = `Прогнозируемый CLV: ${data.prediction[0].toFixed(2)} руб.`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerText = `Ошибка: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
